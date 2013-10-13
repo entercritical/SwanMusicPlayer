@@ -7,7 +7,6 @@ import android.widget.ListView;
 
 public class MusicListActivity extends ListActivity {
     private static final String TAG = "MainActivity";
-    private MusicUtil mMusicUtil;
     private ListView mMusicListView;
     
     @Override
