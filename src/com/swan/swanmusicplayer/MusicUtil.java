@@ -73,7 +73,7 @@ public class MusicUtil {
             }
             Log.d(TAG, cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)));
             mMusicList.add(new Music(
-                    cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media._ID)),
+                    cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media._ID)),
                     cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)),
                     cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)),
                     cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)),

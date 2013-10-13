@@ -17,10 +17,12 @@ public class MusicListActivity extends ListActivity {
         
         mMusicListView = getListView();
         
+        setListAdapter(new MusicListAdapter(this));
+        
         //mMusicListView = (ListView)findViewById(R.id.musicListView);
         
-        mMusicUtil = MusicUtil.getInstance(this);
-        mMusicUtil.resolveMusicList();
+        //mMusicUtil = MusicUtil.getInstance(this);
+        //mMusicUtil.resolveMusicList();
         
     }
     
