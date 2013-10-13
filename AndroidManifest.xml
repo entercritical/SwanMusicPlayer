@@ -24,10 +24,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity 
-            android:name="com.swan.swanmusicplayer.MusicPlayActivity" 
-            android:launchMode="singleTop">
+        <activity
+            android:name="com.swan.swanmusicplayer.MusicPlayActivity"
+            android:launchMode="singleTop" >
         </activity>
+
+        <service android:name="MusicPlayService" >
+            <intent-filter>
+                <action android:name="com.swan.swanmusicplayer.action.PREV" />
+                <action android:name="com.swan.swanmusicplayer.action.NEXT" />
+                <action android:name="com.swan.swanmusicplayer.action.PLAY" />
+                <action android:name="com.swan.swanmusicplayer.action.PAUSE" />
+                <action android:name="com.swan.swanmusicplayer.action.PLAY_TOGGLE" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
