@@ -93,11 +93,11 @@ public class MusicListAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return position;
+        return mMusicList.get(position).getId();
     }
     
     private static class ViewHolder {
-        //public int id;
+        public long id;
         //public ImageView album;
         public TextView text;
     }
@@ -116,7 +116,7 @@ public class MusicListAdapter extends BaseAdapter {
             holder = (ViewHolder)convertView.getTag();
         }
         
-        Music music = mMusicList.get(position);
+        Music music = mMusicList.get(position);        
         String line1 = music.getTitle();
         String line2 = music.getArtist();
         SpannableStringBuilder sb = new SpannableStringBuilder(line1);
@@ -124,6 +124,7 @@ public class MusicListAdapter extends BaseAdapter {
         sb.append(line2);
         sb.setSpan(new ForegroundColorSpan(Color.GRAY), line1.length() + 1, sb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         holder.text.setText(sb);
+        holder.id = music.getId();
         
 //        Bitmap bitmap = music.getCover(mContext);
 //        if (bitmap != null)
@@ -131,4 +132,7 @@ public class MusicListAdapter extends BaseAdapter {
         return convertView;
     }
 
+    public ArrayList<Music> getMusicList() {
+        return mMusicList;
+    }
 }
