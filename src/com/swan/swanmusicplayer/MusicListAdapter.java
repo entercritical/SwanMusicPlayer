@@ -5,9 +5,7 @@ import java.util.ArrayList;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.text.Spannable;
@@ -18,15 +16,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
+/**
+ * MucisListAdapter class
+ * 
+ * @author Suhwan Hwang
+ *
+ */
 public class MusicListAdapter extends BaseAdapter {
     private static final String TAG = "MusicListAdapter";
     
     private Context mContext;
     private LayoutInflater mInflater;
-    private ArrayList<Music> mMusicList = new ArrayList<Music>();
+    private ArrayList<Music> mMusicList = new ArrayList<Music>();   // music list
     
     public static final String[] PROJECTION = {
         MediaStore.Audio.Media._ID,
@@ -40,13 +43,19 @@ public class MusicListAdapter extends BaseAdapter {
         MediaStore.Audio.Media.TRACK,
     };
     
+    /**
+     * Constructor
+     * 
+     * @param context
+     */
     public MusicListAdapter(Context context) {
-        mContext = context;
-        
+        mContext = context;       
         mInflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         
+        // Content Resolver
         ContentResolver resolver = mContext.getContentResolver();
         
+        // Get Music Data
         Uri media = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         String selection = MediaStore.Audio.Media.IS_MUSIC + "!=0";
         Cursor cursor = resolver.query(media, PROJECTION, selection, null, null);
@@ -61,7 +70,8 @@ public class MusicListAdapter extends BaseAdapter {
             if (!cursor.moveToNext()) {
                 break;
             }
-            Log.d(TAG, cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)));
+            //Log.d(TAG, cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)));
+            // Add to ArrayList
             mMusicList.add(new Music(
                     cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media._ID)),
                     cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)),
@@ -72,7 +82,6 @@ public class MusicListAdapter extends BaseAdapter {
 
         }
         cursor.close();
-
     }
     
     @Override
@@ -96,6 +105,12 @@ public class MusicListAdapter extends BaseAdapter {
         return mMusicList.get(position).getId();
     }
     
+    /**
+     * ViewHolder class for performance
+     * 
+     * @author Suhwan Hwang
+     *
+     */
     private static class ViewHolder {
         public long id;
         //public ImageView album;
@@ -116,7 +131,10 @@ public class MusicListAdapter extends BaseAdapter {
             holder = (ViewHolder)convertView.getTag();
         }
         
-        Music music = mMusicList.get(position);        
+        // Get Music data
+        Music music = mMusicList.get(position);
+        
+        // Make 2 line String (Title, Artist)
         String line1 = music.getTitle();
         String line2 = music.getArtist();
         SpannableStringBuilder sb = new SpannableStringBuilder(line1);
@@ -132,6 +150,10 @@ public class MusicListAdapter extends BaseAdapter {
         return convertView;
     }
 
+    /**
+     * get Music List
+     * @return  Music List
+     */
     public ArrayList<Music> getMusicList() {
         return mMusicList;
     }

@@ -1,12 +1,9 @@
 package com.swan.swanmusicplayer;
 
-import java.util.ArrayList;
-
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -21,9 +18,11 @@ public class MusicListActivity extends ListActivity implements OnItemClickListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+        // Retrieve Music Data 
         mMusicListAdapter = new MusicListAdapter(this);
         setListAdapter(mMusicListAdapter);
         
+        // Set Item Click Listener
         mMusicListView = getListView();        
         mMusicListView.setOnItemClickListener(this);
     }
@@ -36,6 +35,8 @@ public class MusicListActivity extends ListActivity implements OnItemClickListen
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        
+        mMusicListAdapter = null;   // for GC
     }
 
     @Override
@@ -43,6 +44,7 @@ public class MusicListActivity extends ListActivity implements OnItemClickListen
             long id) {
         Log.d(TAG, "onItemClick(): MusicList " + position);
         
+        // Move to MusicPlayer
         Intent intent = new Intent(this, MusicPlayActivity.class);
         intent.putExtra("position", position);
         startActivity(intent);

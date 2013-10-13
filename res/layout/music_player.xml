@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <ImageView
+        android:id="@+id/albumImage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/music" />
+    
+	<SeekBar
+        android:id="@+id/playerSeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_above="@+id/playButton"
+        android:layout_marginBottom="10dp" />
+
+    <ImageButton
+        android:id="@+id/prevButton"
+        android:layout_width="80dip"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dip"
+        android:layout_toLeftOf="@+id/playButton"
+        android:src="@drawable/av_previous" />
+
+    <ImageButton
+        android:id="@+id/nextButton"
+        android:layout_width="80dip"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dip"
+        android:layout_toRightOf="@+id/playButton"
+        android:src="@drawable/av_next" />
+
+    <ImageButton
+        android:id="@+id/playButton"
+        android:layout_width="80dip"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dip"
+        android:src="@drawable/av_play" />
+
+</RelativeLayout>
