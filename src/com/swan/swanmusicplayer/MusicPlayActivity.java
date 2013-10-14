@@ -131,6 +131,7 @@ public class MusicPlayActivity extends Activity {
         }
         
         // Get Music Data
+        MusicList.getInstance().refreshAllMusic(this);
         mMusic = MusicList.getInstance().getMusicList().get(mMusicIndex);
         Log.d(TAG, "Play Music: " + mMusic);
         

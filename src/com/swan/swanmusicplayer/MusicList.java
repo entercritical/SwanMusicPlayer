@@ -64,6 +64,8 @@ public class MusicList {
             return false;
         }
 
+        mMusicList.clear(); // clear
+        
         int count = cursor.getCount();
 
         for (int i = 0; i != count; ++i) {

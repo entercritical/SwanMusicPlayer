@@ -34,7 +34,8 @@ public class MusicListAdapter extends BaseAdapter {
     /**
      * Constructor
      * 
-     * @param context
+     * @param context context
+     * @param musicList music list
      */
     public MusicListAdapter(Context context, ArrayList<Music> musicList) {
         mContext = context;       
@@ -71,7 +72,6 @@ public class MusicListAdapter extends BaseAdapter {
      */
     private static class ViewHolder {
         public long id;
-        //public ImageView album;
         public TextView text;
     }
 
@@ -82,7 +82,6 @@ public class MusicListAdapter extends BaseAdapter {
         if (convertView == null) {
             convertView = mInflater.inflate(R.layout.music_list_row, null);
             holder = new ViewHolder();
-            //holder.album = (ImageView)convertView.findViewById(R.id.musicListImage);
             holder.text = (TextView)convertView.findViewById(R.id.musicListText);
             convertView.setTag(holder);
         } else {
@@ -102,9 +101,6 @@ public class MusicListAdapter extends BaseAdapter {
         holder.text.setText(sb);
         holder.id = music.getId();
         
-//        Bitmap bitmap = music.getCover(mContext);
-//        if (bitmap != null)
-//            holder.album.setImageBitmap(music.getCover(mContext));
         return convertView;
     }
 
