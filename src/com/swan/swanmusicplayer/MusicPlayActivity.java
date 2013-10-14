@@ -21,7 +21,7 @@ public class MusicPlayActivity extends Activity {
     private ImageButton mPrev, mPlay, mNext;
     private SeekBar mPlayerSeekBar;
     private Music mMusic;
-    private int mPosition;
+    private int mMusicIndex;
     private PlayStateReceiver mPlayStateReceiver;
 
     private class PlayStateReceiver extends BroadcastReceiver {
@@ -49,16 +49,16 @@ public class MusicPlayActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
-        mPosition = intent.getIntExtra("position", -1);
+        mMusicIndex = intent.getIntExtra("music_index", -1);
         
-        if (mPosition == -1) {
-            Log.d(TAG, "Wrong Play position");
+        if (mMusicIndex == -1) {
+            Log.d(TAG, "Wrong Play Index");
             finish();
             return;
         }
         
         // Get Music Data
-        mMusic = MusicList.getInstance().getMusicList().get(mPosition);
+        mMusic = MusicList.getInstance().getMusicList().get(mMusicIndex);
         Log.d(TAG, "Play Music: " + mMusic);
         
         // initialize views
@@ -117,7 +117,7 @@ public class MusicPlayActivity extends Activity {
     private void play() {
         Intent intent = new Intent(getBaseContext(), MusicPlayService.class);
         intent.setAction(MusicPlayService.ACTION_PLAY);
-        intent.putExtra("position", mPosition);
+        intent.putExtra("music_index", mMusicIndex);
         startService(intent);
         
         mPlay.setImageResource(R.drawable.av_pause);    // change play button image
@@ -129,7 +129,7 @@ public class MusicPlayActivity extends Activity {
     private void pause() {
         Intent intent = new Intent(getBaseContext(), MusicPlayService.class);
         intent.setAction(MusicPlayService.ACTION_PAUSE);
-        intent.putExtra("position", mPosition);
+        intent.putExtra("music_index", mMusicIndex);
         startService(intent);
         
         mPlay.setImageResource(R.drawable.av_play);     // change play button image
@@ -141,7 +141,7 @@ public class MusicPlayActivity extends Activity {
     private void playToggle() {
         Intent intent = new Intent(getBaseContext(), MusicPlayService.class);
         intent.setAction(MusicPlayService.ACTION_PLAY_TOGGLE);
-        intent.putExtra("position", mPosition);
+        intent.putExtra("music_index", mMusicIndex);
         startService(intent);
         
         mPlay.setImageResource(MusicPlayService.getInstance(this).isPlaying() ? R.drawable.av_play : R.drawable.av_pause);    // change play button image
@@ -152,10 +152,10 @@ public class MusicPlayActivity extends Activity {
      */
     private void playPrev() {        
         if (MusicPlayService.getInstance(this).getCurrentPlayPosition() < 2000) {
-            if (mPosition > 0) {
-                mPosition--;
+            if (mMusicIndex > 0) {
+                mMusicIndex--;
             } else {
-                mPosition = MusicList.getInstance().getMusicList().size();
+                mMusicIndex = MusicList.getInstance().getMusicList().size();
             }
             updateDisplay();
         }               
@@ -164,7 +164,7 @@ public class MusicPlayActivity extends Activity {
         
         Intent intent = new Intent(getBaseContext(), MusicPlayService.class);
         intent.setAction(MusicPlayService.ACTION_PLAY);
-        intent.putExtra("position", mPosition);
+        intent.putExtra("music_index", mMusicIndex);
         startService(intent);
     }
     
@@ -172,10 +172,10 @@ public class MusicPlayActivity extends Activity {
      * play next music
      */
     private void playNext() {        
-        if (mPosition < MusicList.getInstance().getMusicList().size() - 1) {
-            mPosition++;
+        if (mMusicIndex < MusicList.getInstance().getMusicList().size() - 1) {
+            mMusicIndex++;
         } else {
-            mPosition = 0;
+            mMusicIndex = 0;
         }
         updateDisplay();            
         
@@ -183,12 +183,12 @@ public class MusicPlayActivity extends Activity {
         
         Intent intent = new Intent(getBaseContext(), MusicPlayService.class);
         intent.setAction(MusicPlayService.ACTION_PLAY);
-        intent.putExtra("position", mPosition);
+        intent.putExtra("music_index", mMusicIndex);
         startService(intent);
     }
     
     private void updateDisplay() {
-        mMusic = (Music)MusicList.getInstance().getMusicList().get(mPosition);
+        mMusic = (Music)MusicList.getInstance().getMusicList().get(mMusicIndex);
         if (mMusic != null) {
             // Set album art image
             Bitmap albumArt = mMusic.getAlbumArt(this);

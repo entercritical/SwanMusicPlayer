@@ -24,7 +24,7 @@ public class MusicPlayService extends Service implements OnErrorListener, OnComp
     public static final String ACTION_BROADCAST_PAUSE = "com.swan.swanmusicplayer.action.BROADCAST_PAUSE";
     
     private MediaPlayer mPlayer;
-    private int mCurrentPosition;
+    private int mCurrentMusicIndex;
     private MusicPlayReceiver mMusicPlayReceiver;
     private int mInitHeadSetState = -1;
 
@@ -88,10 +88,10 @@ public class MusicPlayService extends Service implements OnErrorListener, OnComp
             Log.d(TAG, "onStartCommand() " + action);
 
             if (ACTION_PLAY.equals(action)) {    // Play music
-                int position = intent.getIntExtra("position", -1);
+                int musicIndex = intent.getIntExtra("music_index", -1);
                 
-                if (position != -1) {
-                    play(position);
+                if (musicIndex != -1) {
+                    play(musicIndex);
                 }
             } else if (ACTION_PAUSE.equals(action)) {   // Pause music
                 pause();
@@ -117,12 +117,12 @@ public class MusicPlayService extends Service implements OnErrorListener, OnComp
     /**
      * Play music
      * 
-     * @param position position of music list
+     * @param musicIndex position of music list
      */
-    public void play(int position) {
-        mCurrentPosition = position;
+    public void play(int musicIndex) {
+        mCurrentMusicIndex = musicIndex;
         
-        Music music = (Music) MusicList.getInstance().getMusicList().get(mCurrentPosition);
+        Music music = (Music) MusicList.getInstance().getMusicList().get(mCurrentMusicIndex);
         if (music == null) {
             Log.e(TAG, "play() : No music or invalid position");
             return;

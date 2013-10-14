@@ -48,7 +48,7 @@ public class MusicListActivity extends ListActivity implements OnItemClickListen
         
         // Move to MusicPlayer
         Intent intent = new Intent(this, MusicPlayActivity.class);
-        intent.putExtra("position", position);
+        intent.putExtra("music_index", position);
         startActivity(intent);
     }
 }
