@@ -10,7 +10,29 @@
         android:layout_centerHorizontal="true"
         android:scaleType="center"
         android:src="@drawable/music" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" 
+        android:layout_marginBottom="10dp"
+        android:layout_above="@+id/playButton" >
         
+        <SeekBar
+            android:id="@+id/seekBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="50dp" />
+        <TextView 
+            android:id="@+id/playTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" 
+            android:layout_marginRight="10dp"
+            android:layout_gravity="right|center_vertical"
+            android:text="@string/default_time"
+            android:textColor="#000000" />
+    </FrameLayout>
+
     <ImageButton
         android:id="@+id/prevButton"
         android:layout_width="80dip"

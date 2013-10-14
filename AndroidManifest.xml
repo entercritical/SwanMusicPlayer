@@ -31,11 +31,10 @@
 
         <service android:name="MusicPlayService" >
             <intent-filter>
-                <action android:name="com.swan.swanmusicplayer.action.PREV" />
-                <action android:name="com.swan.swanmusicplayer.action.NEXT" />
                 <action android:name="com.swan.swanmusicplayer.action.PLAY" />
                 <action android:name="com.swan.swanmusicplayer.action.PAUSE" />
                 <action android:name="com.swan.swanmusicplayer.action.PLAY_TOGGLE" />
+                <action android:name="com.swan.swanmusicplayer.action.SEEK" />
             </intent-filter>
         </service>
     </application>

@@ -9,17 +9,20 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-public class MusicPlayService extends Service implements OnErrorListener, OnCompletionListener {
+public class MusicPlayService extends Service implements OnErrorListener, OnCompletionListener, OnPreparedListener {
     private static final String TAG = "MusicPlayService";
 
     public static final String ACTION_PLAY = "com.swan.swanmusicplayer.action.PLAY";
     public static final String ACTION_PAUSE = "com.swan.swanmusicplayer.action.PAUSE";
     public static final String ACTION_PLAY_TOGGLE = "com.swan.swanmusicplayer.action.PLAY_TOGGLE";
-
+    public static final String ACTION_SEEK = "com.swan.swanmusicplayer.action.SEEK";
+    
+    public static final String ACTION_BROADCAST_PREPARED = "com.swan.swanmusicplayer.action.BROADCAST_PREPARED";
     public static final String ACTION_BROADCAST_COMPLETE = "com.swan.swanmusicplayer.action.BROADCAST_COMPLETE";
     public static final String ACTION_BROADCAST_PAUSE = "com.swan.swanmusicplayer.action.BROADCAST_PAUSE";
     
@@ -66,6 +69,7 @@ public class MusicPlayService extends Service implements OnErrorListener, OnComp
         mPlayer = new MediaPlayer();
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mPlayer.setOnErrorListener(this);
+        mPlayer.setOnPreparedListener(this);
         mPlayer.setOnCompletionListener(this);
 
         // register Broadcast Receiver
@@ -98,6 +102,9 @@ public class MusicPlayService extends Service implements OnErrorListener, OnComp
                 pause();
             } else if (ACTION_PLAY_TOGGLE.equals(action)) { // Play or Pause
                 playToggle();
+            } else if (ACTION_SEEK.equals(action)) {    // Seek
+                int position = intent.getIntExtra("position", 0);
+                seek(position);
             }
         }
         return START_NOT_STICKY;
@@ -188,6 +195,15 @@ public class MusicPlayService extends Service implements OnErrorListener, OnComp
         return mPlayer.getCurrentPosition();
     }
     
+    public void seek(int position) {
+        if (mPlayer == null) {
+            Log.e(TAG, "seek(): MediaPlayer is null");
+            return;
+        }
+        
+        mPlayer.seekTo(position);
+    }
+    
     /**
      * is playing music
      * 
@@ -248,5 +264,13 @@ public class MusicPlayService extends Service implements OnErrorListener, OnComp
                 }
             }
         }
+    }
+
+    @Override
+    public void onPrepared(MediaPlayer mp) {
+        // Broadcast to activity for update display
+        Intent localIntent = new Intent(ACTION_BROADCAST_PREPARED);
+        localIntent.putExtra("duration", mp.getDuration());
+        LocalBroadcastManager.getInstance(getBaseContext()).sendBroadcast(localIntent);
     }
 }
