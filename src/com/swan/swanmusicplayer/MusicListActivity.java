@@ -12,14 +12,16 @@ import android.widget.ListView;
 public class MusicListActivity extends ListActivity implements OnItemClickListener {
     private static final String TAG = "MainActivity";
     private ListView mMusicListView;
-    private static MusicListAdapter mMusicListAdapter;
+    private MusicListAdapter mMusicListAdapter;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Retrieve Music Data 
-        mMusicListAdapter = new MusicListAdapter(this);
+        // Get All Music Data
+        MusicList.getInstance().refreshAllMusic(this);
+        
+        mMusicListAdapter = new MusicListAdapter(this, MusicList.getInstance().getMusicList());
         setListAdapter(mMusicListAdapter);
         
         // Set Item Click Listener
@@ -48,9 +50,5 @@ public class MusicListActivity extends ListActivity implements OnItemClickListen
         Intent intent = new Intent(this, MusicPlayActivity.class);
         intent.putExtra("position", position);
         startActivity(intent);
-    }
-
-    public static MusicListAdapter getMusicListAdapter() {
-        return mMusicListAdapter;
     }
 }

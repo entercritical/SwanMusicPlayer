@@ -1,7 +1,5 @@
 package com.swan.swanmusicplayer;
 
-import java.io.IOException;
-
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,24 +9,49 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
-import android.net.Uri;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 public class MusicPlayService extends Service implements OnErrorListener, OnCompletionListener {
     private static final String TAG = "MusicPlayService";
 
-    public static final String ACTION_PREV = "com.swan.swanmusicplayer.action.PREV";
-    public static final String ACTION_NEXT = "com.swan.swanmusicplayer.action.NEXT";
     public static final String ACTION_PLAY = "com.swan.swanmusicplayer.action.PLAY";
     public static final String ACTION_PAUSE = "com.swan.swanmusicplayer.action.PAUSE";
     public static final String ACTION_PLAY_TOGGLE = "com.swan.swanmusicplayer.action.PLAY_TOGGLE";
 
+    public static final String ACTION_BROADCAST_COMPLETE = "com.swan.swanmusicplayer.action.BROADCAST_COMPLETE";
+    public static final String ACTION_BROADCAST_PAUSE = "com.swan.swanmusicplayer.action.BROADCAST_PAUSE";
+    
     private MediaPlayer mPlayer;
-    private MusicListAdapter mMusicListAdapter;
     private int mCurrentPosition;
     private MusicPlayReceiver mMusicPlayReceiver;
+    private int mInitHeadSetState = -1;
 
+    // for synchronize service instance
+    private static final Object[] sWait = new Object[0];
+    private static MusicPlayService sInstance;
+    
+    /**
+     * return the MusicPlayService instance
+     */
+    public static MusicPlayService getInstance(Context context) {
+        if (sInstance == null) {
+            context.startService(new Intent(context, MusicPlayService.class));
+
+            while (sInstance == null) {
+                try {
+                    synchronized (sWait) {
+                        sWait.wait();
+                    }
+                } catch (InterruptedException ignored) {
+                }
+            }
+        }
+
+        return sInstance;
+    }
+    
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -39,56 +62,40 @@ public class MusicPlayService extends Service implements OnErrorListener, OnComp
         Log.d(TAG, "onCreate()");
         super.onCreate();
 
-        // Uri myUri = ....; // initialize Uri here
-        // MediaPlayer mediaPlayer = new MediaPlayer();
-        // mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        // mediaPlayer.setDataSource(getApplicationContext(), myUri);
-        // mediaPlayer.prepare();
-        // mediaPlayer.start();
-
+        // create media player
         mPlayer = new MediaPlayer();
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mPlayer.setOnErrorListener(this);
         mPlayer.setOnCompletionListener(this);
 
-        // Broadcast Receiver
+        // register Broadcast Receiver
         mMusicPlayReceiver = new MusicPlayReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_HEADSET_PLUG);
         registerReceiver(mMusicPlayReceiver, filter);
+        
+        // initialize service instance
+        sInstance = this;
+        synchronized (sWait) {
+            sWait.notifyAll();
+        }
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
-            mMusicListAdapter = MusicListActivity.getMusicListAdapter();
-
             String action = intent.getAction();
             Log.d(TAG, "onStartCommand() " + action);
 
-            if (ACTION_PREV.equals(action)) {
-                if (mCurrentPosition > 0) {
-                    mCurrentPosition--;
-                } else {
-                    mCurrentPosition = mMusicListAdapter.getCount() - 1;                    
-                }
-                play(mCurrentPosition);
-            } else if (ACTION_NEXT.equals(action)) {
-                if (mCurrentPosition < mMusicListAdapter.getCount() - 1) {
-                    mCurrentPosition++;
-                } else {
-                    mCurrentPosition = 0;                    
-                }
-                play(mCurrentPosition);
-            } else if (ACTION_PLAY.equals(action)) {
+            if (ACTION_PLAY.equals(action)) {    // Play music
                 int position = intent.getIntExtra("position", -1);
                 
                 if (position != -1) {
                     play(position);
                 }
-            } else if (ACTION_PAUSE.equals(action)) {
+            } else if (ACTION_PAUSE.equals(action)) {   // Pause music
                 pause();
-            } else if (ACTION_PLAY_TOGGLE.equals(action)) {
+            } else if (ACTION_PLAY_TOGGLE.equals(action)) { // Play or Pause
                 playToggle();
             }
         }
@@ -100,31 +107,32 @@ public class MusicPlayService extends Service implements OnErrorListener, OnComp
         Log.d(TAG, "onDestroy()");
         super.onDestroy();
 
-        mMusicListAdapter = null; // for GC
         if (mPlayer != null) {
             mPlayer.release();
             mPlayer = null;
         }
+        unregisterReceiver(mMusicPlayReceiver);
     }
 
+    /**
+     * Play music
+     * 
+     * @param position position of music list
+     */
     public void play(int position) {
         mCurrentPosition = position;
-
-        if (mMusicListAdapter == null) {
-            Log.d(TAG, "play(): MediaPlayer is null");
-            return;
-        }
         
-        Music music = (Music) mMusicListAdapter.getItem(mCurrentPosition);
+        Music music = (Music) MusicList.getInstance().getMusicList().get(mCurrentPosition);
         if (music == null) {
-            Log.d(TAG, "play() : No music");
+            Log.e(TAG, "play() : No music or invalid position");
             return;
         }
         
         if (mPlayer == null) {
-            Log.d(TAG, "play(): MediaPlayer is null");
+            Log.e(TAG, "play(): MediaPlayer is null");
             return;
         }
+        Log.d(TAG, "play() : " + music.getTitle());
         
         try {
             mPlayer.reset();
@@ -133,46 +141,83 @@ public class MusicPlayService extends Service implements OnErrorListener, OnComp
             mPlayer.seekTo(0);
             mPlayer.start();
         } catch (Exception e) {
-            Log.d(TAG, "play error");
+            Log.e(TAG, "play(): error");
             e.printStackTrace();
         }
     }
 
+    /**
+     * Pause music
+     */
     public void pause() {
         if (mPlayer == null) {
-            Log.d(TAG, "pause(): MediaPlayer is null");
+            Log.e(TAG, "pause(): MediaPlayer is null");
             return;
         }
         mPlayer.pause();
     }
     
+    /**
+     * Play or Pause music
+     */
     public void playToggle() {
         if (mPlayer == null) {
-            Log.d(TAG, "playToggle(): MediaPlayer is null");
+            Log.e(TAG, "playToggle(): MediaPlayer is null");
             return;
         }
         
-        if (mPlayer.isPlaying()) {
+        if (mPlayer.isPlaying()) {  // Is Playing?
             mPlayer.pause();
         } else {
             mPlayer.start();
         }
     }
+    
+    /**
+     * return current play position
+     * 
+     * @return current position
+     */
+    public int getCurrentPlayPosition() {
+        if (mPlayer == null) {
+            Log.e(TAG, "getCurrentTime(): MediaPlayer is null");
+            return 0;
+        }
+        
+        return mPlayer.getCurrentPosition();
+    }
+    
+    /**
+     * is playing music
+     * 
+     * @return true/false
+     */
+    public boolean isPlaying() {
+        if (mPlayer == null) {
+            Log.e(TAG, "isPlaying(): MediaPlayer is null");
+            return false;
+        }
+        
+        return mPlayer.isPlaying();
+            
+    }
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
-        // TODO Auto-generated method stub
+        Log.e(TAG, "MediaPlayer error : " + what + ' ' + extra);
         return false;
     }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        // TODO Auto-generated method stub
-        
+        // Broadcast to activity for play next music
+        Intent localIntent = new Intent(ACTION_BROADCAST_COMPLETE);
+        LocalBroadcastManager.getInstance(getBaseContext()).sendBroadcast(localIntent);
     }
     
     /**
-     * Broadcast Receiver for HEADSET
+     * Broadcast Receiver for Headset unplug 
+     * 
      * @author Suhwan Hwang
      *
      */
@@ -184,12 +229,23 @@ public class MusicPlayService extends Service implements OnErrorListener, OnComp
             
             // Headset unplugged 
             if (Intent.ACTION_HEADSET_PLUG.equals(action)) {
+                Log.d(TAG, "onReceive() : " + action + " " + intent.getIntExtra("state", 0));
+                
+                if (mInitHeadSetState == -1) {  // initial state
+                    mInitHeadSetState = intent.getIntExtra("state", 0);
+                    return;
+                }
+                
                 if (intent.getIntExtra("state", 0) == 0
-                        && mPlayer.isPlaying()) {
-                    mPlayer.stop();
+                        && mPlayer != null && mPlayer.isPlaying()) {
+                    // Music stop
+                    mPlayer.pause();
+                    
+                    // Broadcast to activity for update display
+                    Intent localIntent = new Intent(ACTION_BROADCAST_PAUSE);
+                    LocalBroadcastManager.getInstance(getBaseContext()).sendBroadcast(localIntent);
                 }
             }
         }
-        
     }
 }

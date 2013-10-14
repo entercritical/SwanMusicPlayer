@@ -1,9 +1,13 @@
 package com.swan.swanmusicplayer;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -16,11 +20,30 @@ public class MusicPlayActivity extends Activity {
     private ImageView mAlbumImage;
     private ImageButton mPrev, mPlay, mNext;
     private SeekBar mPlayerSeekBar;
-    private MusicListAdapter mMusicListAdapter;
     private Music mMusic;
     private int mPosition;
-    private boolean mIsPlaying;
+    private PlayStateReceiver mPlayStateReceiver;
 
+    private class PlayStateReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            Log.d(TAG, "onReceive() : " + action);
+            
+            if (MusicPlayService.ACTION_BROADCAST_COMPLETE.equals(action)) {
+                // play next music
+                playNext();            
+            } else if (MusicPlayService.ACTION_BROADCAST_PAUSE.equals(action)) {
+                // change play button image
+                if (mPlay != null)
+                    mPlay.setImageResource(R.drawable.av_pause);
+            }
+            
+        }
+        
+    }
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,12 +58,19 @@ public class MusicPlayActivity extends Activity {
         }
         
         // Get Music Data
-        mMusicListAdapter = MusicListActivity.getMusicListAdapter();
-        mMusic = (Music)mMusicListAdapter.getItem(mPosition);
+        mMusic = MusicList.getInstance().getMusicList().get(mPosition);
         Log.d(TAG, "Play Music: " + mMusic);
         
         // initialize views
         initViews();
+        
+        // Broadcast Receiver for play service
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(MusicPlayService.ACTION_BROADCAST_PAUSE);
+        filter.addAction(MusicPlayService.ACTION_BROADCAST_COMPLETE);
+        mPlayStateReceiver = new PlayStateReceiver();
+        
+        LocalBroadcastManager.getInstance(this).registerReceiver(mPlayStateReceiver, filter);
         
         // play music
         play();
@@ -58,7 +88,7 @@ public class MusicPlayActivity extends Activity {
             
             @Override
             public void onClick(View v) {
-                prev();
+                playPrev();
             }
         });
         mNext = (ImageButton)findViewById(R.id.nextButton);
@@ -66,7 +96,7 @@ public class MusicPlayActivity extends Activity {
             
             @Override
             public void onClick(View v) {
-                next();
+                playNext();
             }
         });
         mPlay = (ImageButton)findViewById(R.id.playButton);
@@ -78,18 +108,7 @@ public class MusicPlayActivity extends Activity {
             }
         });
 
-        if (mMusic != null) {
-            // Set album art image
-            Bitmap albumArt = mMusic.getAlbumArt(this);
-            if (albumArt != null) {
-                mAlbumImage.setImageBitmap(albumArt);
-            } else {
-                mAlbumImage.setImageResource(R.drawable.music);
-            }
-            
-            // Set Title
-            setTitle(mMusic.getTitle());
-        }
+        updateDisplay();
     }
     
     /**
@@ -101,7 +120,6 @@ public class MusicPlayActivity extends Activity {
         intent.putExtra("position", mPosition);
         startService(intent);
         
-        mIsPlaying = true;
         mPlay.setImageResource(R.drawable.av_pause);    // change play button image
     }
     
@@ -114,7 +132,6 @@ public class MusicPlayActivity extends Activity {
         intent.putExtra("position", mPosition);
         startService(intent);
         
-        mIsPlaying = false;
         mPlay.setImageResource(R.drawable.av_play);     // change play button image
     }
     
@@ -127,55 +144,51 @@ public class MusicPlayActivity extends Activity {
         intent.putExtra("position", mPosition);
         startService(intent);
         
-        mPlay.setImageResource(mIsPlaying ? R.drawable.av_play : R.drawable.av_pause);    // change play button image
-        mIsPlaying = !mIsPlaying;
+        mPlay.setImageResource(MusicPlayService.getInstance(this).isPlaying() ? R.drawable.av_play : R.drawable.av_pause);    // change play button image
     }
     
     /**
      * play previous music
      */
-    private void prev() {
-        Intent intent = new Intent(getBaseContext(), MusicPlayService.class);
-        intent.setAction(MusicPlayService.ACTION_PREV);
-        startService(intent);
-        
-        if (mPosition > 0) {
-            mPosition--;
-        } else {
-            mPosition = mMusicListAdapter.getCount();
-        }
-        mMusic = (Music)mMusicListAdapter.getItem(mPosition);
-        if (mMusic != null) {
-            // Set album art image
-            Bitmap albumArt = mMusic.getAlbumArt(this);
-            if (albumArt != null) {
-                mAlbumImage.setImageBitmap(albumArt);
+    private void playPrev() {        
+        if (MusicPlayService.getInstance(this).getCurrentPlayPosition() < 2000) {
+            if (mPosition > 0) {
+                mPosition--;
             } else {
-                mAlbumImage.setImageResource(R.drawable.music);
+                mPosition = MusicList.getInstance().getMusicList().size();
             }
-            
-            // Set Title
-            setTitle(mMusic.getTitle());
-        }       
+            updateDisplay();
+        }               
 
-        mIsPlaying = true;
         mPlay.setImageResource(R.drawable.av_pause);    // change play button image
+        
+        Intent intent = new Intent(getBaseContext(), MusicPlayService.class);
+        intent.setAction(MusicPlayService.ACTION_PLAY);
+        intent.putExtra("position", mPosition);
+        startService(intent);
     }
     
     /**
      * play next music
      */
-    private void next() {
-        Intent intent = new Intent(getBaseContext(), MusicPlayService.class);
-        intent.setAction(MusicPlayService.ACTION_NEXT);
-        startService(intent);
-        
-        if (mPosition < mMusicListAdapter.getCount() - 1) {
+    private void playNext() {        
+        if (mPosition < MusicList.getInstance().getMusicList().size() - 1) {
             mPosition++;
         } else {
             mPosition = 0;
         }
-        mMusic = (Music)mMusicListAdapter.getItem(mPosition);
+        updateDisplay();            
+        
+        mPlay.setImageResource(R.drawable.av_pause);    // change play button image
+        
+        Intent intent = new Intent(getBaseContext(), MusicPlayService.class);
+        intent.setAction(MusicPlayService.ACTION_PLAY);
+        intent.putExtra("position", mPosition);
+        startService(intent);
+    }
+    
+    private void updateDisplay() {
+        mMusic = (Music)MusicList.getInstance().getMusicList().get(mPosition);
         if (mMusic != null) {
             // Set album art image
             Bitmap albumArt = mMusic.getAlbumArt(this);
@@ -187,16 +200,14 @@ public class MusicPlayActivity extends Activity {
             
             // Set Title
             setTitle(mMusic.getTitle());
-        } 
-        
-        mIsPlaying = true;
-        mPlay.setImageResource(R.drawable.av_pause);    // change play button image
+        }         
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        
-        mMusicListAdapter = null;   // for GC
-    }
+                
+        //unregister receiver
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mPlayStateReceiver);
+    }    
 }
