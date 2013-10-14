@@ -318,7 +318,9 @@ public class MusicPlayActivity extends Activity {
     /**
      * play previous music
      */
-    private void playPrev() {        
+    private void playPrev() {
+        stopPlayTimer();
+        
         if (MusicPlayService.getInstance(this).getCurrentPlayPosition() < 2000) {
             if (mMusicIndex > 0) {
                 mMusicIndex--;
@@ -339,7 +341,9 @@ public class MusicPlayActivity extends Activity {
     /**
      * play next music
      */
-    private void playNext() {        
+    private void playNext() {
+        stopPlayTimer();
+        
         if (mMusicIndex < MusicList.getInstance().getMusicList().size() - 1) {
             mMusicIndex++;
         } else {
@@ -348,7 +352,7 @@ public class MusicPlayActivity extends Activity {
         updateDisplay();            
         
         mPlay.setImageResource(R.drawable.av_pause);    // change play button image
-        
+                
         Intent intent = new Intent(getBaseContext(), MusicPlayService.class);
         intent.setAction(MusicPlayService.ACTION_PLAY);
         intent.putExtra("music_index", mMusicIndex);
