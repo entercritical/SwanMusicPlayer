@@ -323,7 +323,7 @@ public class MusicPlayActivity extends Activity {
             if (mMusicIndex > 0) {
                 mMusicIndex--;
             } else {
-                mMusicIndex = MusicList.getInstance().getMusicList().size();
+                mMusicIndex = MusicList.getInstance().getMusicList().size() - 1;
             }
             updateDisplay();
         }               
