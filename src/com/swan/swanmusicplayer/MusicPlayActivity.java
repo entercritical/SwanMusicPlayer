@@ -68,7 +68,7 @@ public class MusicPlayActivity extends Activity {
             } else if (MusicPlayService.ACTION_BROADCAST_PAUSE.equals(action)) {
                 // change play button image
                 if (mPlay != null)
-                    mPlay.setImageResource(R.drawable.av_pause);
+                    mPlay.setImageResource(R.drawable.av_play);
             }
         }
     }
