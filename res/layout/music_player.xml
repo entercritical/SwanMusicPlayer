@@ -8,25 +8,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
+        android:scaleType="center"
         android:src="@drawable/music" />
-    
-	<SeekBar
-        android:id="@+id/playerSeekBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_above="@+id/playButton"
-        android:layout_marginRight="50dp"
-        android:layout_marginBottom="10dp" />
-	
-	<TextView 
-	    android:id="@+id/playerTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop ="@id/playerSeekBar"
-        android:textColor="#000000"
-        android:text="00:00" />
-	    
+        
     <ImageButton
         android:id="@+id/prevButton"
         android:layout_width="80dip"

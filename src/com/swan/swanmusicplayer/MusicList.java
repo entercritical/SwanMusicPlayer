@@ -9,6 +9,14 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 
+/**
+ * Music List class 
+ * 
+ * Singleton class for runtime music data
+ * 
+ * @author Suhwan Hwang
+ *
+ */
 public class MusicList {
     private static final String TAG = "MusicList";
     private static MusicList uniqueInstance;
@@ -37,6 +45,12 @@ public class MusicList {
         return uniqueInstance;
     }
     
+    /**
+     * get all music data
+     * 
+     * @param context
+     * @return true/false
+     */
     public boolean refreshAllMusic(Context context) {
         // Content Resolver
         ContentResolver resolver = context.getContentResolver();
@@ -71,6 +85,11 @@ public class MusicList {
         return true;
     }
     
+    /**
+     * get ArrayList of music data
+     * 
+     * @return music data
+     */
     public ArrayList<Music> getMusicList() {
         return mMusicList;
     }

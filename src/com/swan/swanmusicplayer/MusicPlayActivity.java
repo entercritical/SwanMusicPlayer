@@ -19,7 +19,6 @@ public class MusicPlayActivity extends Activity {
     private static final String TAG = "MusicPlayActivity";
     private ImageView mAlbumImage;
     private ImageButton mPrev, mPlay, mNext;
-    private SeekBar mPlayerSeekBar;
     private Music mMusic;
     private int mMusicIndex;
     private PlayStateReceiver mPlayStateReceiver;
@@ -39,9 +38,7 @@ public class MusicPlayActivity extends Activity {
                 if (mPlay != null)
                     mPlay.setImageResource(R.drawable.av_pause);
             }
-            
         }
-        
     }
     
     @Override

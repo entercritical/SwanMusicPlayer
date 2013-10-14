@@ -72,6 +72,7 @@ public class MusicPlayService extends Service implements OnErrorListener, OnComp
         mMusicPlayReceiver = new MusicPlayReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_HEADSET_PLUG);
+        
         registerReceiver(mMusicPlayReceiver, filter);
         
         // initialize service instance

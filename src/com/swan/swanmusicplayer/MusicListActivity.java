@@ -38,13 +38,13 @@ public class MusicListActivity extends ListActivity implements OnItemClickListen
     protected void onDestroy() {
         super.onDestroy();
         
-        mMusicListAdapter = null;   // for GC
+        mMusicListAdapter = null; // for GC
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position,
             long id) {
-        Log.d(TAG, "onItemClick(): MusicList " + position);
+        Log.d(TAG, "onItemClick(): play " + position);
         
         // Move to MusicPlayer
         Intent intent = new Intent(this, MusicPlayActivity.class);
